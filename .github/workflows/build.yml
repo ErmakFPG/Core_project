@@ -1,27 +1,32 @@
 name: Build Kivy APK
 
 on: 
-  push: # Сборка будет запускаться при каждом推送 кода в GitHub
-    branches: [ main ]  # Укажите вашу основную ветку, если не main, то master
-  workflow_dispatch: # Позволяет запускать сборку кнопкой из интерфейса GitHub
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    # Опционально: принудительно использовать Node.js 24
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    
     steps:
       - uses: actions/checkout@v4
-
-      # Ключевой момент: используем готовое действие для сборки
+        # actions/checkout@v4 все еще использует Node 20, но работает
+      
       - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
+        uses: ArtemSBulgakov/buildozer-action@v2
         id: buildozer
         with:
-          workdir: .       # Указываем, где лежит buildozer.spec (в корне)
+          workdir: .
           buildozer_version: stable
-
-      # Сохраняем готовый APK как артефакт, чтобы скачать его
+      
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: my-android-app
           path: ${{ steps.buildozer.outputs.filename }}
+          if-no-files-found: error
