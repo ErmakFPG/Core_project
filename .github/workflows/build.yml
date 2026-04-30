@@ -36,18 +36,15 @@ jobs:
     - name: Initialize Buildozer
       run: buildozer init
     
-    - name: Auto-accept Android SDK licenses
+    - name: Fix buildozer.spec for licenses
       run: |
-        mkdir -p ~/.android
-        echo "count=0" > ~/.android/repositories.cfg
-        yes | sdkmanager --licenses || true
+        # Добавляем автоматическое принятие лицензий в spec файл
+        echo "android.accept_sdk_license = True" >> buildozer.spec
     
     - name: Build APK
-      run: buildozer android debug
-      env:
-        # Автоматически принимаем все лицензии
-        ANDROID_SDK_LICENSE: "yes"
-        ANDROID_HOME: /home/runner/.buildozer/android/platform/android-sdk
+      run: |
+        # Автоматический ответ на все вопросы yes
+        echo yes | buildozer android debug || buildozer android debug --yes
     
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
