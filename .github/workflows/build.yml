@@ -9,16 +9,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     
-    # Опционально: принудительно использовать Node.js 24
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-    
     steps:
       - uses: actions/checkout@v4
-        # actions/checkout@v4 все еще использует Node 20, но работает
       
       - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v2
+        uses: ArtemSBulgakov/buildozer-action@v1  # ← ТОЛЬКО v1 существует
         id: buildozer
         with:
           workdir: .
@@ -29,4 +24,3 @@ jobs:
         with:
           name: my-android-app
           path: ${{ steps.buildozer.outputs.filename }}
-          if-no-files-found: error
