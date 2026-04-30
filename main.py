@@ -229,15 +229,15 @@ class WorkoutApp(App):
         self.layout.add_widget(main_layout)
     
     def update_exercise_timer(self, dt):
-        if self.timer_time_left > 0:
+        if self.timer_time_left > 1:
             self.timer_time_left -= 1
             self.timer_label.text = str(self.timer_time_left)
             
             # Воспроизводим тик (для планок)
             self.play_tick(self.timer_time_left)
             
-            if self.timer_time_left <= 5:
-                self.timer_label.color = (0.9, 0.55, 0.1, 1)
+            if self.timer_time_left <= 3:
+                self.timer_label.color = (0.8, 0.3, 0.2, 1)
         else:
             self.timer_event.cancel()
             self.complete_exercise(None)
@@ -301,7 +301,7 @@ class WorkoutApp(App):
             font_size=35,
             size_hint=(1, 0.1),
             background_normal='',
-            background_color=(0.8, 0.5, 0.2, 1),
+            background_color=(0.4, 0.4, 0.4, 1),
             color=(1, 1, 1, 1)
         )
         skip_btn.bind(on_press=self.skip_rest)
@@ -317,15 +317,15 @@ class WorkoutApp(App):
         self.rest_timer_event = Clock.schedule_interval(self.update_rest_timer, 1)
     
     def update_rest_timer(self, dt):
-        if self.rest_time_left > 0:
+        if self.rest_time_left > 1:
             self.rest_time_left -= 1
             self.rest_timer_label.text = str(self.rest_time_left)
             
             # Воспроизводим тик для отдыха
             self.play_tick(self.rest_time_left)
             
-            if self.rest_time_left <= 5:
-                self.rest_timer_label.color = (0.9, 0.55, 0.1, 1)
+            if self.rest_time_left <= 3:
+                self.rest_timer_label.color = (0.8, 0.3, 0.2, 1)
         else:
             self.rest_timer_event.cancel()
             self.move_to_next_exercise()
@@ -361,7 +361,7 @@ class WorkoutApp(App):
         )
         
         congrats_message = Label(
-            text="Тренировка завершена!\nОтличная работа!",
+            text="Тренировка завершена!",
             font_size=40,
             color=(0.3, 0.3, 0.3, 1),
             size_hint=(1, 0.4)
