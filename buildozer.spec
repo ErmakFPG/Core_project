@@ -1,30 +1,17 @@
 [app]
-# Название программы (на экране телефона)
-title = My First App
-version = 0.1
-
-# Внутреннее имя пакета (уникальный идентификатор)
+title = My Kivy App
 package.name = myapp
-
-# Домен вашего сайта (обычно org.ваше_имя)
 package.domain = org.username
-
-# Файл, с которого всё начинается
 source.dir = .
-
-# ВАЖНО: Укажите все нужные библиотеки
-requirements = python3,kivy,kivymd,requests,openssl
-
-# Ориентация экрана
+version = 0.1
+requirements = python3,kivy
 orientation = portrait
 
-# Иконка (поместите файл в папку с проектом)
-icon.filename = my_icon.png
+[buildozer]
+log_level = 2
 
-# Целевая версия Android (рекомендую 31 или 33)
-android.api = 33
+[app]
+android.api = 30
 android.minapi = 21
-android.ndk = 25b
-
-# Обязательно согласитесь с лицензией (для автоматической сборки)
+android.ndk = 23b
 android.accept_sdk_license = True
