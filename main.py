@@ -9,6 +9,12 @@ from kivy.graphics import Color, Rectangle
 from kivy.core.audio import SoundLoader
 import os
 
+try:
+    from android.permissions import request_permissions, Permission
+    HAS_ANDROID = True
+except ImportError:
+    HAS_ANDROID = False
+
 class WorkoutProgressBar(BoxLayout):
     """Кастомный виджет горизонтальной шкалы прогресса"""
     def __init__(self, total_segments=15, **kwargs):
@@ -78,6 +84,11 @@ class WorkoutProgressBar(BoxLayout):
 
 class WorkoutApp(App):
     def build(self):
+    
+        if HAS_ANDROID:
+           permissions = [Permission.RECORD_AUDIO, Permission.MODIFY_AUDIO_SETTINGS]
+           request_permissions(permissions)
+            
         Window.clearcolor = (0.95, 0.94, 0.92, 1)
         
         # Загружаем звуки
