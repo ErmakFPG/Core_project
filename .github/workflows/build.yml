@@ -1,3 +1,4 @@
+yaml
 name: Build Kivy APK
 
 on:
@@ -7,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # Используем стабильную версию Ubuntu
+    runs-on: ubuntu-22.04
     
     steps:
     - name: Checkout code
@@ -36,8 +37,18 @@ jobs:
     - name: Initialize Buildozer
       run: buildozer init
     
+    - name: Auto-accept Android SDK licenses
+      run: |
+        mkdir -p ~/.android
+        echo "count=0" > ~/.android/repositories.cfg
+        yes | sdkmanager --licenses || true
+    
     - name: Build APK
       run: buildozer android debug
+      env:
+        # Автоматически принимаем все лицензии
+        ANDROID_SDK_LICENSE: "yes"
+        ANDROID_HOME: /home/runner/.buildozer/android/platform/android-sdk
     
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
