@@ -1,0 +1,27 @@
+name: Build Kivy APK
+
+on: 
+  push: # Сборка будет запускаться при каждом推送 кода в GitHub
+    branches: [ main ]  # Укажите вашу основную ветку, если не main, то master
+  workflow_dispatch: # Позволяет запускать сборку кнопкой из интерфейса GitHub
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Ключевой момент: используем готовое действие для сборки
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          workdir: .       # Указываем, где лежит buildozer.spec (в корне)
+          buildozer_version: stable
+
+      # Сохраняем готовый APK как артефакт, чтобы скачать его
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-android-app
+          path: ${{ steps.buildozer.outputs.filename }}
