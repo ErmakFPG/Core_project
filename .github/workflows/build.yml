@@ -1,3 +1,4 @@
+yaml
 name: Build Kivy APK
 
 on:
@@ -7,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # Используем стабильную версию Ubuntu
+    runs-on: ubuntu-22.04
     
     steps:
     - name: Checkout code
@@ -32,9 +33,6 @@ jobs:
         pip3 install --upgrade pip
         pip3 install cython==0.29.37
         pip3 install buildozer
-    
-    - name: Initialize Buildozer
-      run: buildozer init
     
     - name: Build APK
       run: buildozer android debug
