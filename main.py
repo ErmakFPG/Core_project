@@ -256,7 +256,7 @@ class WorkoutApp(App):
         # Название упражнения
         self.exercise_name = Label(
             text=current_exercise["name"],
-            font_size=40,
+            font_size=80,
             color=(0.1, 0.1, 0.1, 1),
             size_hint=(1, 0.3),
             halign='center',
@@ -268,7 +268,7 @@ class WorkoutApp(App):
         # Описание упражнения
         self.exercise_description = Label(
             text=current_exercise["description"],
-            font_size=20,
+            font_size=60,
             color=(0.4, 0.4, 0.4, 1),
             size_hint=(1, 0.7),
             halign='center',
