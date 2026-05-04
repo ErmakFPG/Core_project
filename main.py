@@ -7,7 +7,12 @@ from kivy.core.window import Window
 from kivy.uix.floatlayout import FloatLayout
 from kivy.graphics import Color, Rectangle
 from kivy.core.audio import SoundLoader
+from kivy.uix.anchorlayout import AnchorLayout
+from kivy.uix.widget import Widget
 import os
+
+EXERCISE_TIME = 30
+RESTORATION_TIME = 15
 
 try:
     from android.permissions import request_permissions, Permission
@@ -51,7 +56,7 @@ class WorkoutProgressBar(BoxLayout):
     
     def set_progress(self, completed_percent):
         """Устанавливает прогресс от 0 до 100"""
-        self.completed_segments = int((completed_percent / 100.0) * self.total_segments)
+        self.completed_segments = int(round((completed_percent / 100.0) * self.total_segments))
         self.update_colors()
     
     def increment(self):
@@ -95,22 +100,65 @@ class WorkoutApp(App):
         self.load_sounds()
         
         # Список упражнений
-        self.exercise_names = [
-            "Вакуум живота",
-            "Классическое скручивание",
-            "Обратное скручивание",
-            "Боковая планка",
-            "Планка на прямых руках"
+        self.exercises = [
+            {
+                'name': 'Вакуум живота',
+                'description': (
+                    "Исходное положение: лежа на спине, ноги согнуты в коленях, стопы на полу, руки на животе.\n\n"
+                    "Шаг 1: Сделайте спокойный выдох ртом, полностью выпустив воздух.\n"
+                    "Шаг 2: Сильно втяните живот под ребра, будто хотите пупком дотронуться до позвоночника.\n"
+                    "Шаг 3: Замрите в этом положении на 10-15 секунд. Дышать при этом нельзя (или очень поверхностно).\n"
+                    "Шаг 4: Расслабьте живот на вдохе."
+                    )
+            },
+            {
+                'name': 'Классическое скручивание',
+                'description': (
+                    "Исходное положение: лежа на спине, ноги согнуты, стопы на полу.\n\n"
+                    "Руки скрещены на груди или ладони у висков (не сцепляйте за шеей!).\n"
+                    "Ключевое: Подбородок прижат к груди (чтобы не тянуть шею).\n"
+                    "На выдохе — поднимите только лопатки от пола. Поясница, копчик и стопы прижаты намертво.\n"
+                    "Вверху сделайте паузу 1 секунду, дополнительно сожмите пресс.\n"
+                    "На вдохе — медленно опуститесь, но не кладите голову на пол (держите напряжение).\n"
+                    "Дозировка: 12-15 повторений. Медленно, без рывков."
+                    )
+            },
+            {
+                'name': 'Обратное скручивание',
+                'description': (
+                    "Исходное положение: лежа на спине, ноги согнуты в коленях под 90 градусов. Руки вдоль тела ладонями вниз.\n\n"
+                    "Ключевое: Не отрывайте поясницу! Она прижата к полу ВСЕГДА.\n"
+                    "Ключевое: Подбородок прижат к груди (чтобы не тянуть шею).\n"
+                    "На выдохе — подтяните колени к груди, отрывая таз от пола буквально на 2-3 см. Движение — как будто вы скатываете поясницу в рулон.\n"
+                    "На вдохе — медленно верните ноги в исходное положение (угол 90°).\n"
+                    "Дозировка: 10-12 повторений."                    
+                    )
+            },
+            {
+                'name': 'Боковая планка',
+                'description': (
+                    "Исходное положение: лягте на бок, опора на предплечье (локоть строго под плечом) и на внешнюю сторону стопы.\n"                   
+                    "Дозировка: 30 секунд удержания."                    
+                    )
+            },
+            {
+                'name': 'Планка на прямых руках',
+                'description': (
+                    "Исходное положение: Упор лежа, как при отжиманиях, но руки прямые.\n"
+                    "Живот втянут, ягодицы сжаты. Не прогибайтесь в пояснице!\n"
+                    "Дозировка: 30 секунд удержания."                    
+                    )
+            }
         ]
         
         # Упражнения с автоматическим таймером
         self.timer_exercises = [3, 4]
-        self.exercise_timer_duration = 30
+        self.exercise_timer_duration = EXERCISE_TIME
         
         # Параметры тренировки
         self.total_circuits = 3
-        self.exercises_per_circuit = len(self.exercise_names)
-        self.rest_time = 15
+        self.exercises_per_circuit = len(self.exercises)
+        self.rest_time = RESTORATION_TIME
         
         # Общее количество упражнений во всей тренировке
         self.total_exercises = self.total_circuits * self.exercises_per_circuit
@@ -189,10 +237,11 @@ class WorkoutApp(App):
         main_layout = BoxLayout(orientation='vertical', spacing=15, padding=[30, 20, 30, 30])
         
         # Верхняя часть: прогресс-бар
-        top_padding = BoxLayout(size_hint=(1, 0.15), padding=[0, 20, 0, 0])
+        top_padding = BoxLayout(size_hint=(1, 0.04), padding=[0, 20, 0, 0])
         
         # Создаём прогресс-бар
         self.progress_bar = WorkoutProgressBar(total_segments=15)
+        
         # Вычисляем текущий прогресс в процентах
         progress_percent = (self.current_exercise_number - 1) / self.total_exercises * 100
         self.progress_bar.set_progress(progress_percent)
@@ -200,26 +249,51 @@ class WorkoutApp(App):
         top_padding.add_widget(self.progress_bar)
         main_layout.add_widget(top_padding)
         
+        # Блок с названием и описанием        
+        info_layout = BoxLayout(orientation='vertical', spacing=10, size_hint=(1, 0.6))
+        current_exercise = self.exercises[self.current_exercise_index]
+        
         # Название упражнения
-        current_exercise = self.exercise_names[self.current_exercise_index]
         self.exercise_name = Label(
-            text=current_exercise,
-            font_size=48,
+            text=current_exercise["name"],
+            font_size=40,
             color=(0.1, 0.1, 0.1, 1),
-            size_hint=(1, 0.5)
+            size_hint=(1, 0.3),
+            halign='center',
+            valign='center'
         )
-        main_layout.add_widget(self.exercise_name)
+        self.exercise_name.bind(size=self.exercise_name.setter('text_size'))
+        info_layout.add_widget(self.exercise_name)
+        
+        # Описание упражнения
+        self.exercise_description = Label(
+            text=current_exercise["description"],
+            font_size=20,
+            color=(0.4, 0.4, 0.4, 1),
+            size_hint=(1, 0.7),
+            halign='center',
+            valign='top'
+        )
+        
+        self.exercise_description.bind(size=self.exercise_description.setter('text_size'))
+        info_layout.add_widget(self.exercise_description)
+        main_layout.add_widget(info_layout)
         
         # Проверяем, нужно ли показывать таймер
         if self.current_exercise_index in self.timer_exercises:
             # Упражнение с автоматическим таймером
+            
             self.timer_label = Label(
                 text=str(self.exercise_timer_duration),
                 font_size=120,
                 color=(0.25, 0.55, 0.85, 1),
-                size_hint=(1, 0.35)
+                size_hint=(1, None),
+                height=70
             )
-            main_layout.add_widget(self.timer_label)
+            main_layout.add_widget(self.timer_label) 
+            
+            spacer = Widget(size_hint=(1, 0.1))
+            main_layout.add_widget(spacer)
             
             self.timer_time_left = self.exercise_timer_duration
             self.timer_event = Clock.schedule_interval(self.update_exercise_timer, 1)
@@ -227,9 +301,8 @@ class WorkoutApp(App):
             # Обычное упражнение - кнопка "Выполнил"
             self.complete_btn = Button(
                 text="ВЫПОЛНИЛ",
-                font_size=55,
-                size_hint=(0.8, 0.25),
-                pos_hint={'center_x': 0.5},
+                font_size=35,
+                size_hint=(1, 0.1),
                 background_normal='',
                 background_color=(0.4, 0.7, 0.3, 1),
                 color=(1, 1, 1, 1)
@@ -278,7 +351,7 @@ class WorkoutApp(App):
             next_exercise_index = 0
             next_circuit += 1
         
-        next_exercise_name = self.exercise_names[next_exercise_index]
+        next_exercise_name = self.exercises[next_exercise_index]["name"]
         
         rest_layout = BoxLayout(orientation='vertical', spacing=20, padding=50)
         
@@ -389,7 +462,6 @@ class WorkoutApp(App):
         )
         finish_btn.bind(on_press=self.back_to_start)
         
-        congrats_layout.add_widget(self.progress_bar)
         congrats_layout.add_widget(congrats_title)
         congrats_layout.add_widget(congrats_message)
         congrats_layout.add_widget(finish_btn)
