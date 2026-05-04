@@ -1,7 +1,7 @@
 [app]
 
 # Название приложения (на экране телефона)
-title = Workout App
+title = Core Project
 
 # Внутреннее имя пакета
 package.name = workoutapp
