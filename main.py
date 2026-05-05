@@ -9,6 +9,7 @@ from kivy.graphics import Color, Rectangle
 from kivy.core.audio import SoundLoader
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.widget import Widget
+from datetime import datetime
 import os
 
 EXERCISE_TIME = 30
@@ -95,6 +96,7 @@ class WorkoutApp(App):
            request_permissions(permissions)
             
         Window.clearcolor = (0.95, 0.94, 0.92, 1)
+        self.workout_start_time = None
         
         # Загружаем звуки
         self.load_sounds()
@@ -108,18 +110,18 @@ class WorkoutApp(App):
                     "Шаг 1: Сделайте спокойный выдох ртом, полностью выпустив воздух.\n"
                     "Шаг 2: Сильно втяните живот под ребра, будто хотите пупком дотронуться до позвоночника.\n"
                     "Шаг 3: Замрите в этом положении на 10-15 секунд. Дышать при этом нельзя (или очень поверхностно).\n"
-                    "Шаг 4: Расслабьте живот на вдохе."
+                    "Шаг 4: Расслабьте живот на вдохе.\n"
+                    "Дозировка: 5 повторений."
                     )
             },
             {
                 'name': 'Классическое скручивание',
                 'description': (
                     "Исходное положение: лежа на спине, ноги согнуты, стопы на полу.\n\n"
-                    "Руки скрещены на груди или ладони у висков (не сцепляйте за шеей!).\n"
-                    "Ключевое: Подбородок прижат к груди (чтобы не тянуть шею).\n"
-                    "На выдохе — поднимите только лопатки от пола. Поясница, копчик и стопы прижаты намертво.\n"
+                    "Руки скрещены на груди или ладони у висков.\n"
+                    "Подбородок прижат к груди.\n"                    
                     "Вверху сделайте паузу 1 секунду, дополнительно сожмите пресс.\n"
-                    "На вдохе — медленно опуститесь, но не кладите голову на пол (держите напряжение).\n"
+                    "На вдохе — медленно опуститесь, но не кладите голову на пол.\n"
                     "Дозировка: 12-15 повторений. Медленно, без рывков."
                     )
             },
@@ -127,8 +129,6 @@ class WorkoutApp(App):
                 'name': 'Обратное скручивание',
                 'description': (
                     "Исходное положение: лежа на спине, ноги согнуты в коленях под 90 градусов. Руки вдоль тела ладонями вниз.\n\n"
-                    "Ключевое: Не отрывайте поясницу! Она прижата к полу ВСЕГДА.\n"
-                    "Ключевое: Подбородок прижат к груди (чтобы не тянуть шею).\n"
                     "На выдохе — подтяните колени к груди, отрывая таз от пола буквально на 2-3 см. Движение — как будто вы скатываете поясницу в рулон.\n"
                     "На вдохе — медленно верните ноги в исходное положение (угол 90°).\n"
                     "Дозировка: 10-12 повторений."                    
@@ -145,7 +145,7 @@ class WorkoutApp(App):
                 'name': 'Планка на прямых руках',
                 'description': (
                     "Исходное положение: Упор лежа, как при отжиманиях, но руки прямые.\n"
-                    "Живот втянут, ягодицы сжаты. Не прогибайтесь в пояснице!\n"
+                    "Живот втянут, ягодицы сжаты.\n"
                     "Дозировка: 30 секунд удержания."                    
                     )
             }
@@ -228,6 +228,7 @@ class WorkoutApp(App):
         self.current_exercise_index = 0
         self.current_exercise_number = 1
         self.waiting_for_next = False
+        self.workout_start_time = datetime.now()
         
         self.show_exercise_screen()
     
@@ -256,7 +257,7 @@ class WorkoutApp(App):
         # Название упражнения
         self.exercise_name = Label(
             text=current_exercise["name"],
-            font_size=80,
+            font_size=40,
             color=(0.1, 0.1, 0.1, 1),
             size_hint=(1, 0.3),
             halign='center',
@@ -268,7 +269,7 @@ class WorkoutApp(App):
         # Описание упражнения
         self.exercise_description = Label(
             text=current_exercise["description"],
-            font_size=60,
+            font_size=20,
             color=(0.4, 0.4, 0.4, 1),
             size_hint=(1, 0.7),
             halign='center',
@@ -431,11 +432,17 @@ class WorkoutApp(App):
     def show_congratulations(self):
         self.layout.clear_widgets()
         
-        congrats_layout = BoxLayout(orientation='vertical', spacing=20, padding=50)
+        congrats_layout = BoxLayout(orientation='vertical', spacing=20, padding=50)       
         
-        # Полный прогресс-бар в конце
-        self.progress_bar = WorkoutProgressBar(total_segments=15)
-        self.progress_bar.set_progress(100)
+        # Рассчитываем продолжительность тренировки
+        if self.workout_start_time:
+            workout_duration = datetime.now() - self.workout_start_time
+            total_seconds = int(workout_duration.total_seconds())
+            minutes = total_seconds // 60
+            seconds = total_seconds % 60
+            duration_text = f"Время тренировки: {minutes}:{seconds:02d}"
+        else:
+            duration_text = "Время тренировки: --:--"
         
         congrats_title = Label(
             text="ПОЗДРАВЛЯЕМ!",
@@ -445,7 +452,7 @@ class WorkoutApp(App):
         )
         
         congrats_message = Label(
-            text="Тренировка завершена!",
+            text="Тренировка завершена!\n\n" + duration_text,
             font_size=40,
             color=(0.3, 0.3, 0.3, 1),
             size_hint=(1, 0.4)
